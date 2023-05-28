@@ -1,5 +1,5 @@
-# ReduceNet can reduce network depth following the deep training startegi of VanillaNet(https://arxiv.org/abs/2305.12972).
-# The 
+# ReduceNet
+####  ReduceNet can reduce network depth following the deep training startegi of VanillaNet(https://arxiv.org/abs/2305.12972).
 
 
 
