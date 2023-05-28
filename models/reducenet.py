@@ -23,7 +23,7 @@ class BasicBlock(nn.Module):
         self.bn2 = nn.BatchNorm2d(planes)
 
 
-    '''
+    
     def forward(self, x):
         out = self.bn1(self.conv1(x))
         out = self.scaler*F.relu(out, inplace=True) + (1-self.scaler)*out
@@ -43,7 +43,7 @@ class BasicBlock(nn.Module):
         
         out = F.relu(out,inplace=True)
         return out
-
+    '''
 class ReduceNet(nn.Module):
     def __init__(self, block, num_blocks, num_classes=10, width_scaler=1):
         super(ReduceNet, self).__init__()
@@ -76,8 +76,8 @@ class ReduceNet(nn.Module):
         
         out = self.bn1(self.conv1(x))
         
-        out = F.relu(out,inplace=True)
-        #out = self.scaler*F.relu(out, inplace=True) + (1-self.scaler)*out
+        #out = F.relu(out,inplace=True)
+        out = self.scaler*F.relu(out, inplace=True) + (1-self.scaler)*out
 
         out = self.layer1(out)
         out = self.layer2(out)
