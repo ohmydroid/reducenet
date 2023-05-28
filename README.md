@@ -3,7 +3,7 @@
 
 #### Code is based on repo [pytorch-cifar](https://github.com/kuangliu/pytorch-cifar)
 
-#### We use [torchsummaryX](https://github.com/nmhkahn/torchsummaryX) to connt parameters and MAdds
+#### We use [torchsummaryX](https://github.com/nmhkahn/torchsummaryX) to count parameters and MAdds
 
 
 
