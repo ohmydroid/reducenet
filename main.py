@@ -189,9 +189,7 @@ def test(epoch):
 
     # Save checkpoint.
     acc = 100.*correct/total
-    if epoch == 300:
-        with open('./log.csv', 'w') as f:
-            f.write('{}_{}_{}_{}\n'.format(args.split_ratio,args.dataset,args.model,args.scale,acc))
+    
     if acc > best_acc:
         print('Saving..')
         state = {
