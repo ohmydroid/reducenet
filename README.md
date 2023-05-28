@@ -1,5 +1,6 @@
 # ReduceNet
-####  ReduceNet can reduce network depth following the deep training startegi of VanillaNet(https://arxiv.org/abs/2305.12972).
+####  ReduceNet can reduce network depth following [deep training startegi of VanillaNet](https://arxiv.org/abs/2305.12972)
+#### Code is based on repo [pytorch-cifar](https://github.com/kuangliu/pytorch-cifar)
 
 
 
