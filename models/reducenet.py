@@ -29,6 +29,7 @@ class BasicBlock(nn.Module):
     def forward(self, x):
         out = self.bn1(self.conv1(x))
         out = self.scaler*F.relu(out, inplace=True) + (1-self.scaler)*out
+        # out = nn.Dropout2d(drop_rate)(out), to be tested
         out = self.bn2(self.conv2(out))
         if self.shortcut:
            out += x 
