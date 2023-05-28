@@ -18,8 +18,8 @@ class BasicBlock(nn.Module):
         self.shortcut = True if stride==1 else False
         self.scaler = scaler
 
-        self.conv1 = nn.Conv2d(in_planes, planes*expansion, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(planes)
+        self.conv1 = nn.Conv2d(in_planes, expansion*planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(expansion*planes)
 
         self.conv2 = nn.Conv2d(expansion*planes, planes, kernel_size=1, stride=1, padding=0, bias=False)
         self.bn2 = nn.BatchNorm2d(planes)
