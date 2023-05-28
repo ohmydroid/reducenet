@@ -10,13 +10,14 @@
 
 # just run
 python main.py -m reduce20
+# python main.py -m reduce56
 
 
 
 
 
 
-To do
+# To do
 1. combine  structural re-parameterization techniques such as RepVGG
 2. fuse operators within basic block and turn the whole network into a single layer
 3. explore more elegant way to reduce network depth
