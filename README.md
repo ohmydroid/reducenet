@@ -3,13 +3,13 @@
 1. ReduceNet is totally compatible with current model design
 2. There is no any non-linear activation in the network during inference
 3. Residual connection is allowed to improve model peformance during training and be regared as a special convolution kernel and fused into conv operator during inference
-4. we introduce expansion factor to make bottleneck structure for basic block (conv3 and conv1), making it possible to utilize wider (unlimited width) network during training but will not increase extra computational overhead during inferencce.
+4. we introduce expansion factor to make bottleneck structure for basic block (conv3 and conv1), making it possible to utilize wider (unlimited width) network during training but will not increase extra computational overhead during inference.
 5. Theoretically, the whole network of ReduceNet can be fused into a single linear layer during inferencce while utilizing deep non-linear layers during training
 
 
 #### Code is based on repo [pytorch-cifar](https://github.com/kuangliu/pytorch-cifar)
 
-#### We use [torchsummaryX](https://github.com/nmhkahn/torchsummaryX) to count parameters and MAdds
+#### We use [torchsummaryX](https://github.com/nmhkahn/torchsummaryX) to count parameters and MAdds of model
 
 
 
