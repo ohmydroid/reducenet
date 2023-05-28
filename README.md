@@ -9,9 +9,12 @@
 
 
 # just run
+```python
 python main.py -m reduce20
-# python main.py -m reduce56
-
+```
+```python
+python main.py -m reduce56
+```
 
 
 
