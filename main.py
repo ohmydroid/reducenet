@@ -19,7 +19,7 @@ from torchsummaryX import summary
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 
 ## Settings for model
-parser.add_argument('-g', '--multi_gpu', default=0, help='Model Type.')
+parser.add_argument('-g', '--multi_gpu', default=0, help='')
 parser.add_argument('-m', '--model', default='reduce20', help='Model Type.')
 
 ## Settings for data
