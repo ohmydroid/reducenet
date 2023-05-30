@@ -13,6 +13,15 @@
 
 
 
+# Result of ReduceNet20
+| expansion factor | MAdds  | Params | Acc   |
+|------------------|--------|--------|-------|
+| 1                | 21.7M  | 140.7K | 90.78 |
+| 2                | 42.9M  | 279.6K | 92.42 |
+| 3                | 64.1M  | 418.5K | 93.34 |
+| 10               | 212.8M | 1.39M  | 94.42 |
+
+All models share the same deployment overhead of ReduceNet20. We can further fuse convolution layers to reduce depth (1<=depth<=20) 
 
 # just run
 ```python
