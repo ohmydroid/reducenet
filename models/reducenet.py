@@ -79,8 +79,8 @@ class ReduceNet(nn.Module):
         
         out = self.bn1(self.conv1(x))
         
-        #out = F.relu(out)
-        out = self.scaler*F.relu(out) + (1-self.scaler)*out
+        out = F.relu(out)
+        #out = self.scaler*F.relu(out) + (1-self.scaler)*out
 
         out = self.layer1(out)
         out = self.layer2(out)
