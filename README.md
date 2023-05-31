@@ -1,10 +1,9 @@
 # ReduceNet
 ####  ReduceNet can reduce network depth following [deep training startegy of VanillaNet](https://arxiv.org/abs/2305.12972) while adopting more radical strategy to shrink net. The difference is as follows:
 1. ReduceNet is totally compatible with current model design
-2. There is no any non-linear activation in the network during inference
-3. Residual connection is allowed to improve model peformance during training and be regarded as a special convolution kernel and fused into conv operator during inference
-4. we introduce expansion factor to create bottleneck structure （bottleneck condensation） for basic block (conv3 and conv1), making it possible to utilize wider (unlimited width) network during training but will not increase extra computational overhead during inference. Essentially, bottleneck condensation is a superset of RepVGG with only a single branch 
-5. Theoretically, the whole network of ReduceNet can be fused into a single linear layer with softmax during inferencce while utilizing deep non-linear layers during training
+#removed Residual connection is allowed to improve model peformance during training and be regarded as a special convolution kernel and fused into conv operator during inference
+2. we introduce expansion factor to create bottleneck structure （bottleneck condensation） for basic block (conv3 and conv1), making it possible to utilize wider (unlimited width) network during training but will not increase extra computational overhead during inference. Essentially, bottleneck condensation is a superset of RepVGG with only a single branch 
+
 
 
 #### Code is based on repo [pytorch-cifar](https://github.com/kuangliu/pytorch-cifar)
@@ -13,15 +12,6 @@
 
 
 
-# Result of ReduceNet20
-| expansion factor | MAdds  | Params | Acc   |
-|------------------|--------|--------|-------|
-| 1                | 21.7M  | 140.7K | 90.78 |
-| 2                | 42.9M  | 279.6K | 92.42 |
-| 3                | 64.1M  | 418.5K | 93.34 |
-| 10               | 212.8M | 1.39M  | 94.42 |
-
-All models share the same deployment overhead of ReduceNet20. We can further fuse convolution layers to reduce depth (1<=depth<=20) 
 
 # just run
 ```python
