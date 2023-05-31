@@ -26,10 +26,7 @@ python main.py -m reduce56
 
 1. Add code to fuse operators within basic block
 2. Explore more elegant way to reduce network depth
-3. Combine RepVGG and bottleneck condensation:
-   branch3x3: Conv3BN + LambdaReLU + Conv1BN
-   branch1x1:Conv1BN + LambdaReLU + Conv1BN
-   out = branch3x3+branch1x1
+3. Combine RepVGG and bottleneck condensation---> branch3x3: Conv3BN + LambdaReLU + Conv1BN;branch1x1:Conv1BN + LambdaReLU + Conv1BN;out = branch3x3+branch1x1
 
 
 
