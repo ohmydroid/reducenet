@@ -2,7 +2,7 @@
 ####  ReduceNet can reduce network depth following [deep training startegy of VanillaNet](https://arxiv.org/abs/2305.12972). The difference is as follows:
 1. ReduceNet is totally compatible with current model design
 2. we introduce expansion factor to create bottleneck structure （bottleneck condensation） for basic block (conv3 and conv1), making it possible to utilize wider (unlimited width) network during training but will not increase extra computational overhead during inference.
-3. Combine RepVGG and bottleneck condensation
+
 
 
 #### Code is based on repo [pytorch-cifar](https://github.com/kuangliu/pytorch-cifar)
@@ -26,6 +26,10 @@ python main.py -m reduce56
 
 1. Add code to fuse operators within basic block
 2. Explore more elegant way to reduce network depth
+3. Combine RepVGG and bottleneck condensation:
+   branch3x3: Conv3BN + LambdaReLU + Conv1BN
+   branch1x1:Conv1BN + LambdaReLU + Conv1BN
+   out = branch3x3+branch1x1
 
 
 
