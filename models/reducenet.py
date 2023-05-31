@@ -35,6 +35,8 @@ class BasicBlock(nn.Module):
         # out = nn.Dropout2d(drop_rate)(out), to be tested
         out = self.bn2(self.conv2(out))
         
+        out = F.relu(out, inplace=True)
+        
         out = self.bn3(self.conv3(out))
         if self.shortcut:
            out += x 
