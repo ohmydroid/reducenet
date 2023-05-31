@@ -23,6 +23,9 @@ class BasicBlock(nn.Module):
 
         self.conv2 = nn.Conv2d(expansion*planes, planes, kernel_size=1, stride=1, padding=0, bias=False)
         self.bn2 = nn.BatchNorm2d(planes)
+        
+        self.conv3 = nn.Conv2d(planes, planes, kernel_size=1, stride=1, padding=0, bias=False)
+        self.bn3 = nn.BatchNorm2d(planes)
 
 
     
@@ -31,6 +34,8 @@ class BasicBlock(nn.Module):
         out = self.scaler*F.relu(out) + (1-self.scaler)*out
         # out = nn.Dropout2d(drop_rate)(out), to be tested
         out = self.bn2(self.conv2(out))
+        
+        out = self.bn1(self.conv1(out))
         if self.shortcut:
            out += x 
         return out
