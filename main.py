@@ -19,7 +19,7 @@ from torchsummaryX import summary
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 
 ## Settings for model
-parser.add_argument('-g', '--multi_gpu', default=0, help='')
+parser.add_argument('-g', '--multi_gpu', default=0, help='Model Type.')
 parser.add_argument('-m', '--model', default='reduce20', help='Model Type.')
 
 ## Settings for data
@@ -28,6 +28,8 @@ parser.add_argument('-d', '--dataset', default='cifar10',choices=['cifar10', 'ci
 ## Settings for fast training
 
 parser.add_argument('--workers', default=4, type=int, help='number of workers')
+
+parser.add_argument('--expansion', default=1, type=int, help='expansion')
 parser.add_argument('--seed', default=128, type=int, help='number of random seed')
 ## Settings for optimizer 
 parser.add_argument('--schedule', nargs='+', default=[100, 150, 180], type=int)
@@ -53,10 +55,6 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 best_acc = 0  # best test accuracy
 start_epoch = 1  # start from epoch 0 or last checkpoint epoch
 
-#CIFAR100_TRAIN_MEAN = (0.5070751592371323, 0.48654887331495095, 0.4409178433670343)
-#CIFAR100_TRAIN_STD = (0.2673342858792401, 0.2564384629170883, 0.27615047132568404)
-#CIFAR10_TRAIN_MEAN =(0.4914, 0.4822, 0.4465)
-#CIFAR10_TRAIN_STD = (0.2023, 0.1994, 0.2010)
 
 if args.dataset == 'cifar10':
 
@@ -91,10 +89,10 @@ if args.dataset == 'cifar10':
    # Data
    print('==> Preparing data cifar10')
    trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=False, transform=transform_train)
-   trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, shuffle=True, num_workers=args.workers,pin_memory=True)
+   trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, shuffle=True, num_workers=args.workers)
 
    testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=False, transform=transform_test)
-   testloader = torch.utils.data.DataLoader(testset, batch_size=512, shuffle=False, num_workers=args.workers,pin_memory=True)
+   testloader = torch.utils.data.DataLoader(testset, batch_size=512, shuffle=False, num_workers=args.workers)
 
 else:
     # Data
@@ -106,12 +104,13 @@ else:
 
 
 if args.model == 'reduce20':
-   net = reducenet20(num_classes)
-   print('reducenet20 loaded')
-else:
-    net = reducenet56(num_classes)
-    print('reducenet56 loaded')
+   net = reducenet20(num_classes,expansion=args.expansion)
+   print('reducenet20 is loaded')
 
+else:
+    net = reducenet56(num_classes,expansion=args.expansion)
+    print('reducenet56 is loaded')
+print('num_classes is {}'.format(num_classes))
 summary(net, torch.zeros((1, 3, 32, 32)))
 
 #net = torch.compile(net)
@@ -131,27 +130,25 @@ if args.resume:
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=args.lr,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
+
 if args.optmizer == 'cos':
    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epoch)
 else:
    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer=optimizer, milestones=args.schedule, gamma=args.gamma)
+
 # Training
-def train(epoch):
+def train(rpoch,requires_grad=True,scaler=1.0):
+    net.requires_grad.data = torch.tensor(requires_grad)
+    net.scaler.data=torch.tensor(scaler)
+
     print('\nEpoch: %d' % epoch)
     net.train()
     train_loss = 0
     correct = 0
     total = 0
         
-    iters_per_epoch = len(trainloader)
-    #print('scaler is {}'.format((epoch)/args.epoch))
     for batch_idx, (inputs, targets) in enumerate(trainloader):
-        
-        prop = ((epoch-1)*iters_per_epoch+batch_idx+1)/(args.epoch*iters_per_epoch) 
-        scaler = torch.tensor(0.5*(1+np.cos(np.pi*prop)))
         inputs, targets = inputs.to(device), targets.to(device)
-        #print('scaler is {}'.format(scaler))
-        net.scaler.data=scaler
         optimizer.zero_grad()
         outputs = net(inputs)
         loss = criterion(outputs, targets)
@@ -189,7 +186,8 @@ def test(epoch):
 
     # Save checkpoint.
     acc = 100.*correct/total
-    
+    if epoch == args.epoch:
+       print(net.scaler.cpu().detach().numpy())
     if acc > best_acc:
         print('Saving..')
         state = {
@@ -205,5 +203,11 @@ def test(epoch):
 
 for epoch in range(start_epoch, start_epoch+args.epoch):
     train(epoch)
+    test(epoch)
+    scheduler.step()
+
+
+for epoch in range(start_epoch, start_epoch+args.epoch):
+    train(epoch,requires_grad=False,scaler=0.)
     test(epoch)
     scheduler.step()
