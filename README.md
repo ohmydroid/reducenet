@@ -11,6 +11,8 @@ ReduceNet不再采用VanillaNet那样在训练阶段让LambdaReLU逐渐由非线
 
 #### We use [torchsummaryX](https://github.com/nmhkahn/torchsummaryX) to count parameters and MAdds of model
 
+具体见[知乎文章]（https://zhuanlan.zhihu.com/p/634198940?）
+
 
 
 
