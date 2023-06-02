@@ -88,25 +88,27 @@ if args.dataset == 'cifar10':
 
    # Data
    print('==> Preparing data cifar10')
-   trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=False, transform=transform_train)
+   trainset = torchvision.datasets.CIFAR10(root='/home/onedroid/apps/projects/pytorh-vision/data', train=True, download=False, transform=transform_train)
    trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, shuffle=True, num_workers=args.workers)
 
-   testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=False, transform=transform_test)
+   testset = torchvision.datasets.CIFAR10(root='/home/onedroid/apps/projects/pytorh-vision/data', train=False, download=False, transform=transform_test)
    testloader = torch.utils.data.DataLoader(testset, batch_size=512, shuffle=False, num_workers=args.workers)
 
 else:
     # Data
    print('==> Preparing data..')
-   trainset = torchvision.datasets.CIFAR100(root='./data', train=True, download=True, transform=transform_train)
+   trainset = torchvision.datasets.CIFAR100(root='/home/onedroid/apps/projects/pytorh-vision/data', train=True, download=True, transform=transform_train)
    trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, shuffle=True, num_workers=args.workers)
-   testset = torchvision.datasets.CIFAR100(root='./data', train=False, download=True, transform=transform_test)
+   testset = torchvision.datasets.CIFAR100(root='/home/onedroid/apps/projects/pytorh-vision/data', train=False, download=True, transform=transform_test)
    testloader = torch.utils.data.DataLoader(testset, batch_size=128, shuffle=False, num_workers=args.workers)
 
 
 if args.model == 'reduce20':
    net = reducenet20(num_classes,expansion=args.expansion)
    print('reducenet20 is loaded')
-
+elif args.model == 'res20':
+   net = resnet20(num_classes)
+   print('resnet20 is loaded')
 else:
     net = reducenet56(num_classes,expansion=args.expansion)
     print('reducenet56 is loaded')
@@ -129,15 +131,10 @@ if args.resume:
     start_epoch = checkpoint['epoch']
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(net.parameters(), lr=args.lr,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
 
-if args.optmizer == 'cos':
-   scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epoch)
-else:
-   scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer=optimizer, milestones=args.schedule, gamma=args.gamma)
 
 # Training
-def train(rpoch,requires_grad=True,scaler=1.0):
+def train(epoch,optimizer,requires_grad=True,scaler=1.0):
     net.requires_grad.data = torch.tensor(requires_grad)
     net.scaler.data=torch.tensor(scaler)
 
@@ -200,14 +197,24 @@ def test(epoch):
         torch.save(state, './checkpoint/{}_{}_weight_decay_{}_lr_{}_{}_epoch_ckpt.pth'.format(args.dataset,args.model,args.weight_decay,args.lr,args.epoch))
         best_acc = acc
 
+optimizer1 = optim.SGD(net.parameters(), lr=args.lr,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
+if args.optmizer == 'cos':
+   scheduler1 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer1, T_max=args.epoch)
+else:
+   scheduler1 = torch.optim.lr_scheduler.MultiStepLR(optimizer=optimizer1, milestones=args.schedule, gamma=args.gamma)
 
 for epoch in range(start_epoch, start_epoch+args.epoch):
-    train(epoch)
+    train(epoch,optimizer1)
     test(epoch)
-    scheduler.step()
+    scheduler1.step()
 
+optimizer2 = optim.SGD(net.parameters(), lr=args.lr,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
+if args.optmizer == 'cos':
+   scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer2, T_max=args.epoch)
+else:
+   scheduler2 = torch.optim.lr_scheduler.MultiStepLR(optimizer=optimizer2, milestones=args.schedule, gamma=args.gamma)
 
 for epoch in range(start_epoch, start_epoch+args.epoch):
-    train(epoch,requires_grad=False,scaler=0.)
+    train(epoch,optimizer2, requires_grad=False,scaler=0.)
     test(epoch)
-    scheduler.step()
+    scheduler2.step()
