@@ -25,8 +25,9 @@ python main.py -m reduce56
 
 
 # To do
-
-1. Add code to fuse operators within basic block
+1.第二次训练时，复用basic block中conv3的权重
+2.由于目前ReduceNet采用复用分类层和所有BN层，算是“知识引导”，可以看作是一种隐晦的蒸馏方式。目前的整个pipeline是非常简洁的，但是如果效果不好，就直接采用朴素的蒸馏方式
+3.增加融合算子的
 
 
 
