@@ -1,9 +1,9 @@
 # ReduceNet
-ReduceNet不再采用VanillaNet那样在训练阶段让LambdaReLU逐渐由非线性转为线性，而直接转向对DepthShrinker的精简。
+ReduceNet不再采用VanillaNet那样在训练阶段让LambdaReLU逐渐由非线性转为线性，而直接转向对DepthShrinker的精简。与Depth Shrinker不同，完全抛弃学习mask甄别激活重要性的过程和原始的蒸馏方案。
 
 训练分为两个阶段；
-* 第一阶段scaler为1.0,LambdaReLU为纯粹的ReLU，利用expansion增加模型规模以得到一个达模型的精度。
-* 第二阶段scaler为0.,冻结分类层的权重（将来会继续冻结基本模块中conv3和bn3的权重，或者直接采用蒸馏的方式）LambdaReLU为纯粹的identity mapping。这个时候，该网络相当于是第一阶段的大网络退化而来的小网络。我们通过冻结大网络的分类层权重（以后会重复利用更多大网络的层参数）希望能够引导小网络得到较高的模型性能。第二次训练的lr scheduler估计需要进一步人为调整,目前代码功能还不完善,有待进一步测试.
+* 第一阶段scaler为1.0,LambdaReLU为纯粹的ReLU，利用expansion增加模型规模以得到一个大模型的精度。
+* 第二阶段scaler为0.,冻结分类层的权重（将来会继续冻结basic block中conv3,bn2,bn3的权重，或者直接采用蒸馏的方式）LambdaReLU为纯粹的identity mapping。这个时候，该网络相当于是第一阶段的大网络退化而来的小网络。我们通过冻结大网络的分类层权重,希望能够引导小网络得到较高的模型性能。第二次训练的lr scheduler估计需要进一步人为调整,目前代码功能还不完善,有待进一步测试.
 
 
 
