@@ -3,10 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 
-def _weights_init(m):
-    classname = m.__class__.__name__
-    if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
-        init.kaiming_normal_(m.weight)
+
 
 class Linear(nn.Module):
     def __init__(self, in_dim, out_dim, requires_grad):
@@ -74,7 +71,7 @@ class ReduceNet(nn.Module):
         self.layer3 = self._make_layer(block, 64*width_scaler, num_blocks[2], stride=2, scaler=self.scaler, expansion=expansion)
         self.linear = Linear(64*width_scaler, num_classes, self.requires_grad.item())
 
-        self.apply(_weights_init)
+        self._weights_init()
 
     def _make_layer(self, block, planes, num_blocks, stride, scaler,expansion):
 
@@ -85,6 +82,11 @@ class ReduceNet(nn.Module):
             self.in_planes = planes 
 
         return nn.Sequential(*layers)
+    
+    def _weights_init(self):
+        for name, m in self.named_modules():
+            if isinstance(m, nn.Conv2d):
+               init.kaiming_normal_(m.weight)
 
     def forward(self, x):
         
