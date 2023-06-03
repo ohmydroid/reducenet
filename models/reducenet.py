@@ -4,18 +4,6 @@ import torch.nn.functional as F
 import torch.nn.init as init
 
 
-
-class Linear(nn.Module):
-    def __init__(self, in_dim, out_dim, requires_grad):
-        super(Linear, self).__init__()  
-        self.w = nn.Parameter(torch.randn(in_dim, out_dim), requires_grad=requires_grad)
-        self.b = nn.Parameter(torch.randn(out_dim), requires_grad=requires_grad)
-
-    def forward(self, x):
-        x = x.matmul(self.w) 
-        y = x + self.b.expand_as(x)
-        return y
-
 class BasicBlock(nn.Module):
 
     def __init__(self, in_planes, planes, stride=1,scaler=1.,expansion=1):
@@ -23,12 +11,20 @@ class BasicBlock(nn.Module):
 
         self.shortcut = True if stride==1 else False
         self.scaler = scaler
+         
+        self.branch1 = nn.Sequential(
+                                    nn.Conv2d(in_planes, expansion*planes, kernel_size=3, stride=stride, padding=1, bias=False),
+                                    nn.BatchNorm2d(expansion*planes),
+                                    nn.ReLU(),
+                                    nn.Conv2d(expansion*planes, planes, kernel_size=1, stride=1, padding=0, bias=False),
+                                    nn.BatchNorm2d(planes),
+                                    nn.ReLU())
 
-        self.conv1 = nn.Conv2d(in_planes, expansion*planes, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(expansion*planes)
-
-        self.conv2 = nn.Conv2d(expansion*planes, planes, kernel_size=1, stride=1, padding=0, bias=False)
-        self.bn2 = nn.BatchNorm2d(planes)
+        self.branch2 = nn.Sequential(
+                                     nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False),
+                                     nn.BatchNorm2d(planes),
+                                     nn.ReLU()
+                                     )
 
 
         self.conv3 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
@@ -41,13 +37,7 @@ class BasicBlock(nn.Module):
                                         )
 
     def forward(self, x):
-        #print(self.scaler)
-        out = self.bn1(self.conv1(x))
-        # self.scaler is set to 1 for large model training, then set to 0 for depth pruning and finetuning. 
-        out = self.scaler*F.relu(out) + (1-self.scaler)*out
-
-        out = self.bn2(self.conv2(out))
-        out = F.relu(out)
+        out = self.scaler*self.branch1(x)+self.branch2(x)
 
         out = self.bn3(self.conv3(out))
         out = out + self.shortcut(x) 
@@ -69,7 +59,7 @@ class ReduceNet(nn.Module):
         self.layer1 = self._make_layer(block, 16*width_scaler, num_blocks[0], stride=1, scaler=self.scaler, expansion=expansion)
         self.layer2 = self._make_layer(block, 32*width_scaler, num_blocks[1], stride=2, scaler=self.scaler, expansion=expansion)
         self.layer3 = self._make_layer(block, 64*width_scaler, num_blocks[2], stride=2, scaler=self.scaler, expansion=expansion)
-        self.linear = Linear(64*width_scaler, num_classes, self.requires_grad.item())
+        self.linear = nn.Linear(64*width_scaler, num_classes, self.requires_grad.item())
 
         self._weights_init()
 
@@ -87,6 +77,11 @@ class ReduceNet(nn.Module):
         for name, m in self.named_modules():
             if isinstance(m, nn.Conv2d):
                init.kaiming_normal_(m.weight)
+            
+    def _weights_freeze(self):
+        for name, m in self.named_modules():     
+            if isinstance(m, nn.BatchNorm2d) or isinstance(m, nn.Linear) :
+               m.weight.requires_grad = False 
 
     def forward(self, x):
         
