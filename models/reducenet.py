@@ -59,7 +59,7 @@ class ReduceNet(nn.Module):
         self.layer1 = self._make_layer(block, 16*width_scaler, num_blocks[0], stride=1, scaler=self.scaler, expansion=expansion)
         self.layer2 = self._make_layer(block, 32*width_scaler, num_blocks[1], stride=2, scaler=self.scaler, expansion=expansion)
         self.layer3 = self._make_layer(block, 64*width_scaler, num_blocks[2], stride=2, scaler=self.scaler, expansion=expansion)
-        self.linear = nn.Linear(64*width_scaler, num_classes, self.requires_grad.item())
+        self.linear = nn.Linear(64*width_scaler, num_classes)
 
         self._weights_init()
 
