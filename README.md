@@ -31,7 +31,9 @@ python main.py -m reduce56
 # To do
 
 * 第二次训练时，继续复用一些层的参数
+* 引入LORA，利用VanillaNet中的LambdaReLU(deep training strategy) 改进LORA
 * 由于目前ReduceNet采用复用分类层，算是“知识引导”，可以看作是一种隐晦的蒸馏方式，不需要两个模型参与蒸馏。目前的整个pipeline是非常简洁的，如果效果不好，就直接采用最朴素的蒸馏方式,soft labels 和特征对齐。
+
 
 
 
