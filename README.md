@@ -1,9 +1,11 @@
 # ReduceNet
-ReduceNet不再采用VanillaNet那样在训练阶段让LambdaReLU逐渐由非线性转为线性，而直接转向对DepthShrinker的精简。与Depth Shrinker不同，完全抛弃学习mask甄别激活重要性的过程和原始的蒸馏方案。
+ReduceNet不再像VanillaNet那样在训练阶段让LambdaReLU逐渐由非线性转为线性，也不再是DepthShrinker的精简版本。
 
-训练分为两个阶段；
-* 第一阶段scaler为1.0,LambdaReLU为纯粹的ReLU，利用expansion增加模型规模以得到一个大模型的精度。
-* 第二阶段scaler为0.,冻结分类层的权重（将来会继续冻结basic block中conv3,bn2,bn3的权重，或者直接采用蒸馏的方式）LambdaReLU为纯粹的identity mapping。这个时候，该网络相当于是第一阶段的大网络退化而来的小网络。我们通过冻结大网络的分类层权重,希望能够引导小网络得到较高的模型性能。第二次训练的lr scheduler估计需要进一步人为调整,目前代码功能还不完善,有待进一步测试.
+训练分为两个训练阶段；
+* 在第一个阶段，Basic Block最后的Conv3之前存在两个分支，一个是bottleneck结构的非线性分支（Conv3BnRelu和Conv1BNRelu，bottleneck中间的宽度由参数expansion决定），一个是单层非线性卷积的分支（Conv3BNRelu），两个分支同时参与训练。
+* 第二阶段，丢弃bottleneck结构的非线性分支，大网络退化成小网络。小网络复用大的网络的分类层，部分卷积层和BN层，引入LORA非线性分支增加小网络学习能力，事后融合
+
+第二次训练的lr scheduler估计需要进一步人为调整,目前代码功能还没完全实现,效果也有待进一步测试.
 
 
 
@@ -27,9 +29,9 @@ python main.py -m reduce56
 
 
 # To do
-* 第二次训练时候，basic block中的两个线性卷积可以直接丢弃，直接变成一层卷积（该卷积和两个线性卷积融合后的形状一样，但是实际上不需要融合卷积层算子），否则不能正常初始为等价的单层权重，导致训练效果不佳
-* 第二次训练时，继续复用basic block中conv3，bn2, bn3的权重
-* 由于目前ReduceNet采用复用分类层，算是“知识引导”，可以看作是一种隐晦的蒸馏方式，不需要两个模型参与蒸馏。目前的整个pipeline是非常简洁的，如果效果不好，就直接采用最朴素的蒸馏方式,soft labbels 和特征对齐。
+
+* 第二次训练时，继续复用一些层的参数
+* 由于目前ReduceNet采用复用分类层，算是“知识引导”，可以看作是一种隐晦的蒸馏方式，不需要两个模型参与蒸馏。目前的整个pipeline是非常简洁的，如果效果不好，就直接采用最朴素的蒸馏方式,soft labels 和特征对齐。
 
 
 
