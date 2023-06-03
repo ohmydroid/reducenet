@@ -80,7 +80,8 @@ class ReduceNet(nn.Module):
             
     def _weights_freeze(self):
         for name, m in self.named_modules():     
-            if isinstance(m, nn.BatchNorm2d) or isinstance(m, nn.Linear) :
+            #if isinstance(m, nn.BatchNorm2d) or isinstance(m, nn.Linear) :
+            if isinstance(m, nn.Linear) :
                m.weight.requires_grad = False 
 
     def forward(self, x):
