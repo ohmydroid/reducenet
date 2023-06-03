@@ -3,7 +3,7 @@ ReduceNet不再像VanillaNet那样在训练阶段让LambdaReLU逐渐由非线性
 
 训练分为两个训练阶段；
 * 在第一个阶段，Basic Block最后的Conv3之前存在两个分支，一个是bottleneck结构的非线性分支（Conv3BnRelu和Conv1BNRelu串联，bottleneck中间的宽度由参数expansion决定），一个是单层非线性卷积的分支（Conv3BNRelu），两个分支同时参与训练。
-* 第二阶段，丢弃bottleneck结构的非线性分支，大网络退化成小网络。小网络复用大网络的分类层，部分卷积层和BN层，引入LORA非线性分支增加小网络学习能力，事后融合
+* 第二阶段，丢弃bottleneck结构的非线性分支，大网络退化成小网络。小网络复用大网络的分类层，部分卷积层和BN层，引入LORA线性分支增加小网络学习能力，事后融合.根据情况，可以在LORA的中间插入VanillaNet的LambdaReLU，在训练过程中引入非线性，最终转为线性。
 
 第二次训练的lr scheduler估计需要进一步人为调整,目前代码功能还没完全实现,效果也有待进一步测试.
 
