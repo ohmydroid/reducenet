@@ -134,8 +134,7 @@ criterion = nn.CrossEntropyLoss()
 
 
 # Training
-def train(epoch,optimizer,requires_grad=True,scaler=1.0):
-    net.requires_grad.data = torch.tensor(requires_grad)
+def train(epoch,optimizer,scaler=1.0):
     net.scaler.data=torch.tensor(scaler)
 
     print('\nEpoch: %d' % epoch)
