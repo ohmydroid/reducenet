@@ -57,10 +57,8 @@ class BasicBlock(nn.Module):
 class ReduceNet(nn.Module):
     def __init__(self, block, num_blocks, num_classes=10, width_scaler=1, expansion=1,use_lora=True):
         super(ReduceNet, self).__init__()
-
-        self.requires_grad =nn.Parameter(torch.tensor(True), requires_grad=False)
+        
         self.scaler = nn.Parameter(torch.tensor(1.), requires_grad=False)
-
         self.in_planes = 16*width_scaler
 
         self.conv1 = nn.Conv2d(3, 16*width_scaler, kernel_size=3, stride=1, padding=1, bias=False)
@@ -85,7 +83,7 @@ class ReduceNet(nn.Module):
 
     def _weights_init(self):
         for name, m in self.named_modules():
-            if isinstance(m, (nn.Conv2d,nn.BatchNorm2d)):
+            if isinstance(m, nn.Conv2d):
                init.kaiming_normal_(m.weight)
 
     
