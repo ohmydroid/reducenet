@@ -61,7 +61,7 @@ class ReduceNet(nn.Module):
         self.layer3 = self._make_layer(block, 64*width_scaler, num_blocks[2], stride=2, scaler=self.scaler, expansion=expansion)
         self.linear = nn.Linear(64*width_scaler, num_classes)
 
-        self._weights_init()
+        #self._weights_init()
 
     def _make_layer(self, block, planes, num_blocks, stride, scaler,expansion):
 
@@ -80,8 +80,7 @@ class ReduceNet(nn.Module):
             
     def _weights_freeze(self):
         for name, m in self.named_modules():     
-            #if isinstance(m, nn.BatchNorm2d) or isinstance(m, nn.Linear) :
-            if isinstance(m, nn.Linear) :
+            if isinstance(m, (nn.Linear,nn.BatchNorm2d)) :
                m.weight.requires_grad = False 
 
     def forward(self, x):
