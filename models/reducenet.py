@@ -9,7 +9,7 @@ class BasicBlock(nn.Module):
     def __init__(self, in_planes, planes, stride=1,scaler=1.0,expansion=1,use_lora=True):
         super(BasicBlock, self).__init__()
 
-        self.shortcut = True if stride==1 else False
+        
         self.scaler = scaler 
         self.use_lora=use_lora
          
