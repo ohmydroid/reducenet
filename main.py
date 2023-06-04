@@ -217,6 +217,6 @@ else:
    scheduler2 = torch.optim.lr_scheduler.MultiStepLR(optimizer=optimizer2, milestones=args.schedule, gamma=args.gamma)
 
 for epoch in range(start_epoch, start_epoch+args.epoch):
-    train(epoch,optimizer2, requires_grad=False,scaler=0.)
+    train(epoch,optimizer2,scaler=0.)
     test(epoch)
     scheduler2.step()
