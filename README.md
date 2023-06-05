@@ -1,19 +1,19 @@
 # ReduceNet
-ReduceNet不再像VanillaNet那样在训练阶段让LambdaReLU逐渐由非线性转为线性，也不再是DepthShrinker的精简版本。
+This repo presents a compact paradigm of knowledge distillation, where student network is a subnetwork of teacher network by removing nonlinear bottleneck branch, thereby sharing similar network architecture. Teacher network can obtain higher model performance by expanding width of nonlinear bottleneck branch while student network architecture keeps unchanged. Finally, the goal of such pattern is to transfer ability from teacher network to student network combing combing existing and mature knowledge distillation techniques, offering an elegant distillation framework to bridge neural architecture search domain.
 
-训练分为两个训练阶段；
-* 在第一个阶段，Basic Block最后的Conv3之前存在两个分支，一个是bottleneck结构的非线性分支（Conv3BnRelu和Conv1BNRelu串联，bottleneck中间的宽度由参数expansion决定），一个是单层非线性卷积的分支（Conv3BNRelu），两个分支同时参与训练。
-* 第二阶段，丢弃bottleneck结构的非线性分支，大网络退化成小网络。小网络复用大网络的分类层，部分卷积层和BN层，引入LORA线性分支增加小网络学习能力，事后融合.根据情况，可以在LORA的中间插入VanillaNet的LambdaReLU，在训练过程中引入非线性，最终转为线性。
+The training is divided into two stages: 
 
-第二次训练的lr scheduler估计需要进一步人为调整,目前代码功能还没完全实现,效果也有待进一步调式.
+* In the first stage, there are two branches before the final Conv3 of the Basic Block. One is a non-linear branch with bottleneck structure (Conv3BnRelu and Conv1BNRelu in series, and the width of the bottleneck is determined by the expansion parameter). The other is a single-layer non-linear convolutional branch (Conv3BNRelu). Both branches are trained at the same time.
 
+* In the second stage, the non-linear branch with bottleneck structure is discarded, and the large network is degraded into a small network. The small network reuses the classification layer, some convolutional layers, and BN layers from the large network, introduces the LORA linear branch to increase the learning ability of the small network, and then fuses them afterwards. Depending on the situation, the LambdaReLU of VanillaNet can be inserted into the middle of LORA to introduce non-linearity during training, which eventually becomes linear.
 
+The LR scheduler for the second training needs further manual adjustment, as the code functionality has not been fully implemented yet, and the effect needs further debugging.
 
 #### Code is based on repo [pytorch-cifar](https://github.com/kuangliu/pytorch-cifar)
 
 #### We use [torchsummaryX](https://github.com/nmhkahn/torchsummaryX) to count parameters and MAdds of model
 
-具体见[知乎文章]（https://zhuanlan.zhihu.com/p/634198940?）
+more detail [知乎文章]（https://zhuanlan.zhihu.com/p/634198940?）
 
 
 
@@ -29,10 +29,9 @@ python main.py -m reduce56
 
 
 # To do
+- [] Reuse weights during second training.
+- [] Add vanilla knowledge distillation and other distillation techniqus.
 
-* 第二次训练时，继续复用一些层的参数
-* 引入LORA，利用VanillaNet中的LambdaReLU(deep training strategy) 改进LORA
-* 由于目前ReduceNet采用复用分类层，算是“知识引导”，可以看作是一种隐晦的蒸馏方式，不需要两个模型参与蒸馏。目前的整个pipeline是非常简洁的，如果效果不好，就直接采用最朴素的蒸馏方式,soft labels 和特征对齐。
 
 
 
