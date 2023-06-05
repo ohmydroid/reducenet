@@ -26,7 +26,7 @@ class BasicBlock(nn.Module):
         if use_lora:
            self.lora_branch = nn.Sequential(
                                     nn.Conv2d(in_planes, expansion*planes, kernel_size=3, stride=stride, padding=1, bias=False),
-                                    #nn.BatchNorm2d(expansion*planes),
+                                    nn.BatchNorm2d(expansion*planes),
                                     nn.Conv2d(expansion*planes, planes, kernel_size=1, stride=1, padding=0, bias=False),
                                     )
 
