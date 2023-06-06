@@ -31,6 +31,7 @@ python main.py -m reduce56
 # To do
 - [ ] Reuse weights during second training.
 - [ ] Add vanilla knowledge distillation and other distillation techniques.
+- [ ] Remove redundant branch for student network
 
 
 
