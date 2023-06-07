@@ -87,15 +87,7 @@ class ReduceNet(nn.Module):
         return nn.Sequential(*layers)
 
     def _weights_init(self):
-        for name, m in self.named_modules():
-
-         for stage_name, stage in self.named_children():
-            for named_block, block in stage.named_children():
-                for named_layer, layer in block.named_children():
-                    if named_layer=='branch2':
-                       for op in layer.children():
-                           init.kaiming_normal_(op.weight)
-
+       
          for stage_name, stage in self.named_children():
             if stage_name not in ['linear','conv1']:
                for named_block, block in stage.named_children():
@@ -113,6 +105,7 @@ class ReduceNet(nn.Module):
 
 
     def _weights_freeze(self):
+        
         for stage_name, stage in self.named_children():
             if stage_name in ['linear','conv1']:
                for param in stage.parameters():
