@@ -28,7 +28,7 @@ parser.add_argument('-d', '--dataset', default='cifar10',choices=['cifar10', 'ci
 ## Settings for fast training
 
 parser.add_argument('--workers', default=4, type=int, help='number of workers')
-
+parser.add_argument('--data_dir', default='your_path/data', help='data path')
 parser.add_argument('--expansion', default=1, type=int, help='expansion')
 parser.add_argument('--seed', default=666, type=int, help='number of random seed')
 ## Settings for optimizer 
@@ -89,18 +89,18 @@ if args.dataset == 'cifar10':
 
    # Data
    print('==> Preparing data cifar10')
-   trainset = torchvision.datasets.CIFAR10(root='/home/onedroid/apps/projects/pytorh-vision/data', train=True, download=False, transform=transform_train)
+   trainset = torchvision.datasets.CIFAR10(root=args.data_dir, train=True, download=False, transform=transform_train)
    trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
 
-   testset = torchvision.datasets.CIFAR10(root='/home/onedroid/apps/projects/pytorh-vision/data', train=False, download=False, transform=transform_test)
+   testset = torchvision.datasets.CIFAR10(root=args.data_dir, train=False, download=False, transform=transform_test)
    testloader = torch.utils.data.DataLoader(testset, batch_size=2*args.batch_size, shuffle=False, num_workers=args.workers)
 
 else:
     # Data
    print('==> Preparing data..')
-   trainset = torchvision.datasets.CIFAR100(root='/home/onedroid/apps/projects/pytorh-vision/data', train=True, download=True, transform=transform_train)
+   trainset = torchvision.datasets.CIFAR100(root=args.data_dir, train=True, download=True, transform=transform_train)
    trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
-   testset = torchvision.datasets.CIFAR100(root='/home/onedroid/apps/projects/pytorh-vision/data', train=False, download=True, transform=transform_test)
+   testset = torchvision.datasets.CIFAR100(root=args.data_dir, train=False, download=True, transform=transform_test)
    testloader = torch.utils.data.DataLoader(testset, batch_size=2*args.batch_size, shuffle=False, num_workers=args.workers)
 
 
