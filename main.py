@@ -210,7 +210,7 @@ for epoch in range(start_epoch, start_epoch+args.epoch):
 net._weights_freeze()
 net._weights_init()
 
-optimizer2 = optim.SGD(net.parameters(), lr=args.lr,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
+optimizer2 = optim.SGD(filter(lambda p: p.requires_grad, net.parameters()), lr=args.lr,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
 if args.optmizer == 'cos':
    scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer2, T_max=args.epoch)
 else:
