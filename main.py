@@ -199,22 +199,22 @@ for epoch in range(start_epoch, start_epoch+args.epoch):
     test(epoch)
     scheduler0.step()
 
+'''
+
 optimizer1 = optim.SGD(net.parameters(), lr=args.lr,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
 if args.optmizer == 'cos':
    scheduler1 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer1, T_max=args.epoch)
 else:
    scheduler1 = torch.optim.lr_scheduler.MultiStepLR(optimizer=optimizer1, milestones=args.schedule, gamma=args.gamma)
 
-
 for epoch in range(start_epoch, start_epoch+args.epoch):
     train(epoch,optimizer1)
     test(epoch)
     scheduler1.step()
 
-'''
 
-#torch.save(net.state_dict(),'teacher.pth')
-net.load_state_dict(torch.load('./checkpoint/teacher.pth'))
+torch.save(net.state_dict(),'./checkpoint/expansion_{}_teacher.pth'.format(args.expansion))
+#net.load_state_dict(torch.load('./checkpoint/expansion_{}_teacher.pth'.format(args.expansion)))
 
 net._weights_freeze()
 #net._weights_init()
