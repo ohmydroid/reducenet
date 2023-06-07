@@ -114,7 +114,8 @@ class ReduceNet(nn.Module):
     def _weights_freeze(self):
         for stage_name, stage in self.named_children():
             if stage_name in ['linear','conv1']:
-               stage.parameters().requires_grad = False
+               for param in stage.parameters():
+                   param.requires_grad = False
             else:
                 for named_block, block in stage.named_children():
                     for named_layer, layer in block.named_children():
