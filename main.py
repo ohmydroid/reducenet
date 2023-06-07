@@ -208,7 +208,7 @@ for epoch in range(start_epoch, start_epoch+args.epoch):
     scheduler1.step()
 
 net._weights_freeze()
-net._weights_init()
+#net._weights_init()
 
 optimizer2 = optim.SGD(filter(lambda p: p.requires_grad, net.parameters()), lr=args.lr,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
 if args.optmizer == 'cos':
