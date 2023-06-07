@@ -31,7 +31,7 @@ class BasicBlock(nn.Module):
 
        
         self.fuse = nn.Sequential(nn.BatchNorm2d(planes),
-                                  nn.ReLU(inplace=True),
+                                  nn.ReLU(),
                                   nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False),
                                   nn.BatchNorm2d(planes))
 
@@ -54,6 +54,7 @@ class BasicBlock(nn.Module):
         out = out1+out2
         out = self.fuse(out)
         out = out + self.shortcut(x)
+        out = F.relu(out)
         return out
 
  
