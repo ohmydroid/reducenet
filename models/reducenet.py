@@ -119,7 +119,8 @@ class ReduceNet(nn.Module):
                 for named_block, block in stage.named_children():
                     for named_layer, layer in block.named_children():
                         if named_layer=='fuse':
-                           layer.parameters().requires_grad = False
+                           for param in layer.parameters():
+                               param.requires_grad = False
             
 
     def forward(self, x):
