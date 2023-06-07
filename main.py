@@ -212,11 +212,11 @@ net._weights_freeze()
 
 optimizer2 = optim.SGD(filter(lambda p: p.requires_grad, net.parameters()), lr=args.lr,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
 if args.optmizer == 'cos':
-   scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer2, T_max=args.epoch)
+   scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer2, T_max=args.epoch//4)
 else:
    scheduler2 = torch.optim.lr_scheduler.MultiStepLR(optimizer=optimizer2, milestones=args.schedule, gamma=args.gamma)
 
-for epoch in range(start_epoch, start_epoch+args.epoch):
+for epoch in range(start_epoch, start_epoch+(args.epoch//4)):
     train(epoch,optimizer2,scaler=0.)
     test(epoch)
     scheduler2.step()
