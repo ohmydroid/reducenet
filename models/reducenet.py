@@ -22,6 +22,8 @@ class BasicBlock(nn.Module):
 
         self.branch2 = nn.Sequential(
                                      nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False),
+                                     nn.BatchNorm2d(planes),
+                                     nn.ReLU()
                                      )
         if use_lora:
            self.lora_branch = nn.Sequential(
@@ -30,8 +32,8 @@ class BasicBlock(nn.Module):
                                     )
 
        
-        self.fuse = nn.Sequential(nn.BatchNorm2d(planes),
-                                  nn.ReLU(),
+        self.fuse = nn.Sequential(#nn.BatchNorm2d(planes),
+                                  #nn.ReLU(inplace=True),
                                   nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False),
                                   nn.BatchNorm2d(planes))
 
@@ -45,6 +47,7 @@ class BasicBlock(nn.Module):
 
     def forward(self, x):
         out1 = self.scaler*self.branch1(x)
+        print(self.scaler)
 
         if  self.use_lora:
             out2 = self.branch2(x) + self.lora_branch(x)
@@ -88,13 +91,13 @@ class ReduceNet(nn.Module):
         return nn.Sequential(*layers)
 
     def _weights_init(self):
-       
+        
          for stage_name, stage in self.named_children():
             if stage_name not in ['linear','conv1']:
                for named_block, block in stage.named_children():
                     for named_layer, layer in block.named_children():
                         if named_layer in ['branch2','lora']:
-                           for named_op, op in named_layer.named_children():
+                           for named_op, op in layer.named_children():
                                if isinstance(op, nn.Conv2d):
                                   init.kaiming_normal_(op.weight)
                                
@@ -106,11 +109,10 @@ class ReduceNet(nn.Module):
 
 
     def _weights_freeze(self):
-        
         for stage_name, stage in self.named_children():
             if stage_name in ['linear','conv1']:
-               for param in stage.parameters():
-                   param.requires_grad = False
+                for param in stage.parameters():
+                    param.requires_grad = False
             else:
                 for named_block, block in stage.named_children():
                     for named_layer, layer in block.named_children():
@@ -133,9 +135,12 @@ class ReduceNet(nn.Module):
 
         return out
 
+
 def reducenet20(num_classes,expansion):
     return ReduceNet(BasicBlock, [3, 3, 3],num_classes, expansion=expansion)
 
 
 def reducenet56(num_classes,expansion):
     return ReduceNet(BasicBlock, [9, 9, 9],num_classes, expansion=expasion)
+
+
