@@ -47,7 +47,7 @@ class BasicBlock(nn.Module):
 
     def forward(self, x):
         out1 = self.scaler*self.branch1(x)
-        print(self.scaler)
+        #print(self.scaler)
 
         if  self.use_lora:
             out2 = self.branch2(x) + self.lora_branch(x)
