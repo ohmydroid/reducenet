@@ -5,11 +5,11 @@ There are two branches before the final Conv3 of the Basic Block. One is a non-l
 
 The training is divided into three stages: 
 
-*  we block non-linear branch with bottleneck structure, only train a small network.
+*  We block non-linear bottleneck branch, only train a small and shallow network.
 
-*  Both branches are trained at the same time (grow stage)
+*  Both branches are trained at the same time to train a larger teacher network
 
-* The non-linear branch with bottleneck structure is discarded, and the large network is degraded into the small network. The small network reuses the classification layer, some convolutional layers, and BN layers from the large network, introduces the LORA linear branch to increase the learning ability of the small network, and then fuses them afterwards. Depending on the situation, the LambdaReLU of VanillaNet can be inserted into the middle of LORA to introduce non-linearity during training, which eventually becomes linear.
+* The non-linear  bottleneck branch is discarded, and the large network is degraded into the small network. The small network reuses the classification layer, some convolutional layers, and BN layers from the large network, introduces the LORA linear branch to increase the learning ability of the small network, and then fuses them afterwards. Depending on the situation, the LambdaReLU of VanillaNet can be inserted into the middle of LORA to introduce non-linearity during training, which eventually becomes linear.
 
 The LR scheduler for the second training needs further manual adjustment, as the code functionality has not been fully implemented yet, and the effect needs further debugging.
 
