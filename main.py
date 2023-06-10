@@ -187,7 +187,7 @@ def test(epoch):
        print(net.scaler.cpu().detach().numpy())
 
 
-'''
+
 optimizer0 = optim.SGD(net.parameters(), lr=args.lr,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
 if args.optmizer == 'cos':
    scheduler0 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer0, T_max=args.epoch)
@@ -199,7 +199,7 @@ for epoch in range(start_epoch, start_epoch+args.epoch):
     test(epoch)
     scheduler0.step()
 
-'''
+
 
 optimizer1 = optim.SGD(net.parameters(), lr=args.lr,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
 if args.optmizer == 'cos':
