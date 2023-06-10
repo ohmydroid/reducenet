@@ -11,7 +11,7 @@ The training is divided into three stages:
 
 * The non-linear  bottleneck branch is discarded, and the large network is degraded into the small network. The small network reuses the classification layer, some convolutional layers, and BN layers from the large network, introduces the LORA linear branch to increase the learning ability of the small network, and then fuses them afterwards. Depending on the situation, the LambdaReLU of VanillaNet can be inserted into the middle of LORA to introduce non-linearity during training, which eventually becomes linear.
 
-The LR scheduler for the second training needs further manual adjustment, as the code functionality has not been fully implemented yet, and the effect needs further debugging.
+The LR and its scheduler for different training stages need further manual adjustment, as the code functionality has not been fully implemented yet, and the effect needs further debugging.
 
 #### Code is based on repo [pytorch-cifar](https://github.com/kuangliu/pytorch-cifar)
 
