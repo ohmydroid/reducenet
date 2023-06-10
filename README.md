@@ -1,11 +1,15 @@
 # ReduceNet
 This repo presents a compact paradigm of knowledge distillation, where student network is a subnetwork of teacher network by removing nonlinear bottleneck branch, thereby sharing similar network architecture. Teacher network can obtain higher model performance by expanding width of nonlinear bottleneck branch while student network architecture keeps unchanged and inherits partial structure and weights from its teacher, which can effectively reduce computational cost for knowledge distillation. Finally, the goal of such pattern is to transfer ability from teacher network to student network combing combing existing and mature knowledge distillation techniques, offering an elegant distillation framework to bridge neural architecture search domain. For simplicity, we choose residual ConvBlock as our basic building block. Our design pattern can extend to any other building blocks such as inverted residual block in MobileNetV2 and DenseNet block.
 
-The training is divided into two stages: 
+There are two branches before the final Conv3 of the Basic Block. One is a non-linear branch with bottleneck structure (Conv3BnRelu and Conv1BNRelu in series, and the width of the bottleneck is determined by the expansion parameter). The other is a single-layer non-linear convolutional branch (Conv3BNRelu).
 
-* In the first stage, there are two branches before the final Conv3 of the Basic Block. One is a non-linear branch with bottleneck structure (Conv3BnRelu and Conv1BNRelu in series, and the width of the bottleneck is determined by the expansion parameter). The other is a single-layer non-linear convolutional branch (Conv3BNRelu). Both branches are trained at the same time.
+The training is divided into three stages: 
 
-* In the second stage, the non-linear branch with bottleneck structure is discarded, and the large network is degraded into a small network. The small network reuses the classification layer, some convolutional layers, and BN layers from the large network, introduces the LORA linear branch to increase the learning ability of the small network, and then fuses them afterwards. Depending on the situation, the LambdaReLU of VanillaNet can be inserted into the middle of LORA to introduce non-linearity during training, which eventually becomes linear.
+*  we block non-linear branch with bottleneck structure, only train a small network.
+
+*  Both branches are trained at the same time (grow stage)
+
+* The non-linear branch with bottleneck structure is discarded, and the large network is degraded into the small network. The small network reuses the classification layer, some convolutional layers, and BN layers from the large network, introduces the LORA linear branch to increase the learning ability of the small network, and then fuses them afterwards. Depending on the situation, the LambdaReLU of VanillaNet can be inserted into the middle of LORA to introduce non-linearity during training, which eventually becomes linear.
 
 The LR scheduler for the second training needs further manual adjustment, as the code functionality has not been fully implemented yet, and the effect needs further debugging.
 
