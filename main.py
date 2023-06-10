@@ -34,7 +34,9 @@ parser.add_argument('--seed', default=666, type=int, help='number of random seed
 ## Settings for optimizer 
 parser.add_argument('--schedule', nargs='+', default=[100, 150, 180], type=int)
 parser.add_argument('-opt', '--optmizer', default='cos',choices=['cos', 'step'], help='Dataset name.')
-parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
+parser.add_argument('--lr0', default=0.1, type=float, help='learning rate')
+parser.add_argument('--lr1', default=0.1, type=float, help='learning rate')
+parser.add_argument('--lr2', default=0.1, type=float, help='learning rate')
 parser.add_argument('--gamma', default=0.1, type=float, help='learning rate gamma')
 parser.add_argument('-wd','--weight_decay', default=1e-4, type=float)
 parser.add_argument('--epoch', default=200, type=int, help='total training epoch')
@@ -188,7 +190,7 @@ def test(epoch):
 
 
 
-optimizer0 = optim.SGD(net.parameters(), lr=args.lr,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
+optimizer0 = optim.SGD(net.parameters(), lr=args.lr0,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
 if args.optmizer == 'cos':
    scheduler0 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer0, T_max=args.epoch)
 else:
@@ -201,7 +203,7 @@ for epoch in range(start_epoch, start_epoch+args.epoch):
 
 
 
-optimizer1 = optim.SGD(net.parameters(), lr=args.lr,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
+optimizer1 = optim.SGD(net.parameters(), lr=args.lr1,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
 if args.optmizer == 'cos':
    scheduler1 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer1, T_max=args.epoch)
 else:
@@ -224,7 +226,7 @@ net._weights_freeze()
 #net = torch.compile(net)
 #net = net.to(device)
 
-optimizer2 = optim.SGD(filter(lambda p: p.requires_grad, net.parameters()) , lr=args.lr,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
+optimizer2 = optim.SGD(filter(lambda p: p.requires_grad, net.parameters()) , lr=args.lr2,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
 scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer2, T_max=args.epoch//4)
 
 
