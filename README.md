@@ -13,6 +13,8 @@ The training is divided into three stages:
 
 The LR and its scheduler for different training stages need further manual adjustment, as the code functionality has not been fully implemented yet, and the effect needs further debugging.
 
+student reduce20 92.70% on cifar10
+
 #### Code is based on repo [pytorch-cifar](https://github.com/kuangliu/pytorch-cifar)
 
 #### We use [torchsummaryX](https://github.com/nmhkahn/torchsummaryX) to count parameters and MAdds of model
