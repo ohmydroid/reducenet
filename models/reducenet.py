@@ -17,13 +17,14 @@ class BasicBlock(nn.Module):
                                     nn.Conv2d(in_planes, expansion*planes, kernel_size=3, stride=stride, padding=1, bias=False),
                                     nn.BatchNorm2d(expansion*planes),
                                     nn.ReLU(),
-                                    nn.Conv2d(expansion*planes, planes, kernel_size=1, stride=1, padding=0, bias=False)
+                                    nn.Conv2d(expansion*planes, planes, kernel_size=1, stride=1, padding=0, bias=False),
+                                    nn.BatchNorm2d(planes)
                                     )
 
         self.branch2 = nn.Sequential(
                                      nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False),
-                                     nn.BatchNorm2d(planes),
-                                     nn.ReLU()
+                                     #nn.BatchNorm2d(planes),
+                                     #nn.ReLU()
                                      )
         if use_lora:
            self.lora_branch = nn.Sequential(
@@ -32,8 +33,8 @@ class BasicBlock(nn.Module):
                                     )
 
        
-        self.fuse = nn.Sequential(#nn.BatchNorm2d(planes),
-                                  #nn.ReLU(inplace=True),
+        self.fuse = nn.Sequential(nn.BatchNorm2d(planes),
+                                  nn.ReLU(inplace=True),
                                   nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False),
                                   nn.BatchNorm2d(planes))
 
@@ -46,15 +47,14 @@ class BasicBlock(nn.Module):
                                         )
 
     def forward(self, x):
-        out1 = self.scaler*self.branch1(x)
-        #print(self.scaler)
-
-        if  self.use_lora:
-            out2 = self.branch2(x) + self.lora_branch(x)
+        if self.scaler == 1.0:  
+           out = self.branch1(x)+self.branch2(x)
         else:
-            out2 = self.branch2(x)
+           out = self.branch2(x)
+        #print(self.scaler)
+        if self.lora==1.0:
+           out = out + self.lora*self.lora_branch(x)
 
-        out = out1+out2
         out = self.fuse(out)
         out = out + self.shortcut(x)
         out = F.relu(out)
@@ -90,38 +90,11 @@ class ReduceNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def _weights_init(self):
-        
-         for stage_name, stage in self.named_children():
-            if stage_name not in ['linear','conv1']:
-               for named_block, block in stage.named_children():
-                    for named_layer, layer in block.named_children():
-                        if named_layer in ['branch2','lora']:
-                           for named_op, op in layer.named_children():
-                               if isinstance(op, nn.Conv2d):
-                                  init.kaiming_normal_(op.weight)
-                               
-                               elif isinstance(op, nn.BatchNorm2d):
-                                    init.constant_(op.weight, 1)
-                                    if op.bias is not None:
-                                       init.constant_(op.bias, 0.0001)
-                                    init.constant_(op.running_mean, 0)
-
 
     def _weights_freeze(self):
-        for stage_name, stage in self.named_children():
-            #if stage_name in ['linear','conv1']:
-            if stage_name in ['linear']:
-                for param in stage.parameters():
-                    param.requires_grad = False
-            ‘’‘
-            else:
-                for named_block, block in stage.named_children():
-                    for named_layer, layer in block.named_children():
-                        if named_layer=='fuse':
-                           for param in layer.parameters():
-                               param.requires_grad = False
-            ’‘’
+         for m in self.modules():
+            if isinstance(m, nn.Linear):
+               m.weight.requires_grad = False
 
     def forward(self, x):
         
