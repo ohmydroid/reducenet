@@ -41,7 +41,7 @@ parser.add_argument('--gamma', default=0.1, type=float, help='learning rate gamm
 parser.add_argument('-wd','--weight_decay', default=1e-4, type=float)
 parser.add_argument('--epoch', default=200, type=int, help='total training epoch')
 parser.add_argument('--batch_size', default=128, type=int, help='batch size')
-parser.add_argument('--resume', '-r', action='store_true',help='resume from checkpoint')
+
 args = parser.parse_args()
 
 
@@ -124,14 +124,6 @@ if device == 'cuda':
     if args.multi_gpu==1:
        net = torch.nn.DataParallel(net)
 
-if args.resume:
-    # Load checkpoint.
-    print('==> Resuming from checkpoint..')
-    assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
-    checkpoint = torch.load('./checkpoint/{}_{}_{}_{}_{}_ckpt.pth'.format(args.dataset,args.model,args.expansion, args.weight_decay,args.epoch))
-    net.load_state_dict(checkpoint['net'])
-    best_acc = checkpoint['acc']
-    start_epoch = checkpoint['epoch']
 
 criterion = nn.CrossEntropyLoss()
 
@@ -189,7 +181,7 @@ def test(epoch):
        print(net.scaler.cpu().detach().numpy())
 
 
-
+'''
 optimizer0 = optim.SGD(net.parameters(), lr=args.lr0,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
 if args.optmizer == 'cos':
    scheduler0 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer0, T_max=args.epoch)
@@ -200,7 +192,7 @@ for epoch in range(start_epoch, start_epoch+args.epoch):
     train(epoch,optimizer0,scaler=0.)
     test(epoch)
     scheduler0.step()
-
+'''
 
 
 optimizer1 = optim.SGD(net.parameters(), lr=args.lr1,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
@@ -215,22 +207,19 @@ for epoch in range(start_epoch, start_epoch+args.epoch):
     scheduler1.step()
 
 
-torch.save(net.state_dict(),'./checkpoint/expansion_{}_teacher.pth'.format(args.expansion))
-#net.load_state_dict(torch.load('./checkpoint/expansion_{}_teacher.pth'.format(args.expansion)))
+
+torch.save(net.state_dict(),'./checkpoint/dataset_{}_expansion_{}_teacher.pth'.format(args.dataset, args.expansion))
+#net.load_state_dict(torch.load('./checkpoint/dataset_{}_expansion_{}_teacher.pth'.format(args.dataset, args.expansion)))
 
 net._weights_freeze()
-#net._weights_init()
-
-#net = net.to('cpu')
-#summary(net, torch.zeros((1, 3, 32, 32)))
-#net = torch.compile(net)
-#net = net.to(device)
 
 optimizer2 = optim.SGD(filter(lambda p: p.requires_grad, net.parameters()) , lr=args.lr2,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
-scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer2, T_max=args.epoch//4)
+scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer2, T_max=args.epoch)
 
 
-for epoch in range(start_epoch, start_epoch+(args.epoch//4)):
+for epoch in range(start_epoch, start_epoch+(args.epoch)):
     train(epoch,optimizer2,scaler=0.)
     test(epoch)
     scheduler2.step()
+      
+torch.save(net.state_dict(),'./checkpoint/dataset_{}_expansion_{}_lr_{}_student.pth'.format(args.dataset,args.expansion, args.lr2))  
