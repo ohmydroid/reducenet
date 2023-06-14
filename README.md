@@ -13,7 +13,9 @@ The training is divided into three stages:
 
 The LR and its scheduler for different training stages need further manual adjustment, as the code functionality has not been fully implemented yet, and the effect needs further debugging.
 
-student reduce20 92.70% on cifar10
+
+# current result
+Accuracy of teacher reduce20 (expansion=1) on cifar10 is 92.88%, student reduce20 obtains 92.70% accuracy by freezing classifer layer, reusing weight of teacher network and fine-tuning 200 epochs. 
 
 #### Code is based on repo [pytorch-cifar](https://github.com/kuangliu/pytorch-cifar)
 
