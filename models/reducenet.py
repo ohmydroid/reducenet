@@ -6,19 +6,20 @@ import torch.nn.init as init
 
 class BasicBlock(nn.Module):
 
-    def __init__(self, in_planes, planes, stride=1,scaler=torch.tensor(1.0),expansion=1,use_lora=False):
+    def __init__(self, in_planes, planes, stride=1,scaler=torch.tensor(1.0),expansion=1,lora=0.0):
         super(BasicBlock, self).__init__()
 
         self.scaler = scaler 
 
-        self.use_lora=use_lora
+        self.lora=lora
          
         self.branch1 = nn.Sequential(
                                     nn.Conv2d(in_planes, expansion*planes, kernel_size=3, stride=stride, padding=1, bias=False),
                                     nn.BatchNorm2d(expansion*planes),
                                     nn.ReLU(),
                                     nn.Conv2d(expansion*planes, planes, kernel_size=1, stride=1, padding=0, bias=False),
-                                    nn.BatchNorm2d(planes)
+                                    nn.BatchNorm2d(planes),
+                                    #nn.ReLU(),
                                     )
 
         self.branch2 = nn.Sequential(
@@ -26,15 +27,17 @@ class BasicBlock(nn.Module):
                                      #nn.BatchNorm2d(planes),
                                      #nn.ReLU()
                                      )
-        if use_lora:
-           self.lora_branch = nn.Sequential(
+
+        self.lora_branch = nn.Sequential(
                                     nn.Conv2d(in_planes, expansion*planes, kernel_size=3, stride=stride, padding=1, bias=False),
+                                    nn.BatchNorm2d(expansion*planes),
                                     nn.Conv2d(expansion*planes, planes, kernel_size=1, stride=1, padding=0, bias=False),
+                                    nn.BatchNorm2d(planes),
                                     )
 
        
         self.fuse = nn.Sequential(nn.BatchNorm2d(planes),
-                                  nn.ReLU(inplace=True),
+                                  nn.ReLU(),
                                   nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False),
                                   nn.BatchNorm2d(planes))
 
@@ -45,6 +48,8 @@ class BasicBlock(nn.Module):
                                         nn.Conv2d(in_planes, planes, kernel_size=1, stride=stride, bias=False),
                                         nn.BatchNorm2d(planes)
                                         )
+
+           
 
     def forward(self, x):
         if self.scaler == 1.0:  
@@ -62,10 +67,11 @@ class BasicBlock(nn.Module):
 
  
 class ReduceNet(nn.Module):
-    def __init__(self, block, num_blocks, num_classes=10, width_scaler=1, expansion=1,use_lora=True):
+    def __init__(self, block, num_blocks, num_classes=10, width_scaler=1, expansion=1):
         super(ReduceNet, self).__init__()
         
         self.scaler = nn.Parameter(torch.tensor(1.), requires_grad=False)
+        self.lora = nn.Parameter(torch.tensor(0.), requires_grad=False)
 
         self.in_planes = 16*width_scaler
 
@@ -73,28 +79,31 @@ class ReduceNet(nn.Module):
                                    nn.BatchNorm2d(self.in_planes),
                                    nn.ReLU(inplace=True))
 
-        self.layer1 = self._make_layer(block, 16*width_scaler, num_blocks[0], stride=1, scaler=self.scaler, expansion=expansion,use_lora=use_lora)
-        self.layer2 = self._make_layer(block, 32*width_scaler, num_blocks[1], stride=2, scaler=self.scaler, expansion=expansion,use_lora=use_lora)
-        self.layer3 = self._make_layer(block, 64*width_scaler, num_blocks[2], stride=2, scaler=self.scaler, expansion=expansion,use_lora=use_lora)
+        self.layer1 = self._make_layer(block, 16*width_scaler, num_blocks[0], stride=1, scaler=self.scaler, expansion=expansion,lora=self.lora)
+        self.layer2 = self._make_layer(block, 32*width_scaler, num_blocks[1], stride=2, scaler=self.scaler, expansion=expansion,lora=self.lora)
+        self.layer3 = self._make_layer(block, 64*width_scaler, num_blocks[2], stride=2, scaler=self.scaler, expansion=expansion,lora=self.lora)
         self.linear = nn.Linear(64*width_scaler, num_classes)
 
         #self._weights_init()
 
-    def _make_layer(self, block, planes, num_blocks, stride, scaler,expansion,use_lora):
+    def _make_layer(self, block, planes, num_blocks, stride, scaler,expansion,lora):
 
         strides = [stride] + [1]*(num_blocks-1)
         layers = []
         for stride in strides:
-            layers.append(block(self.in_planes, planes, stride, scaler, expansion,use_lora))
+            layers.append(block(self.in_planes, planes, stride, scaler, expansion,lora))
             self.in_planes = planes 
 
         return nn.Sequential(*layers)
+   
 
 
     def _weights_freeze(self):
-         for m in self.modules():
+        for m in self.modules():
+            #if isinstance(m, (nn.BatchNorm2d,nn.Linear)):
             if isinstance(m, nn.Linear):
                m.weight.requires_grad = False
+            
 
     def forward(self, x):
         
