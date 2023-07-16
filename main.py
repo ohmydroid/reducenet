@@ -1,4 +1,4 @@
-'''Train CIFAR10 with PyTorch.'''
+'''Train CIFAR with PyTorch.'''
 import torch
 import numpy as np
 import torch.nn as nn
@@ -16,31 +16,30 @@ from utils import progress_bar
 from torch.utils.data import DataLoader
 from torchsummaryX import summary
 
-parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
+parser = argparse.ArgumentParser(description='PyTorch CIFAR Training')
 
 ## Settings for model
-parser.add_argument('-g', '--multi_gpu', default=0, help='Model Type.')
 parser.add_argument('-m', '--model', default='reduce20', help='Model Type.')
+parser.add_argument('--expansion', default=1, type=int, help='expansion factor for bottleneck')
+parser.add_argument('-ws','--width_scaler', default=1,type=int, help='network width scaler')
 
 ## Settings for data
 parser.add_argument('-d', '--dataset', default='cifar10',choices=['cifar10', 'cifar100'], help='Dataset name.')
-
-## Settings for fast training
-
-parser.add_argument('--workers', default=4, type=int, help='number of workers')
 parser.add_argument('--data_dir', default='your_path/data', help='data path')
-parser.add_argument('--expansion', default=1, type=int, help='expansion')
+
+## Settings for training
+parser.add_argument('--multi_gpu', default=0, help='Model Type.')
+parser.add_argument('--workers', default=4, type=int, help='number of workers')
 parser.add_argument('--seed', default=666, type=int, help='number of random seed')
-## Settings for optimizer 
-parser.add_argument('--schedule', nargs='+', default=[100, 150, 180], type=int)
-parser.add_argument('-opt', '--optmizer', default='cos',choices=['cos', 'step'], help='Dataset name.')
-parser.add_argument('--lr0', default=0.1, type=float, help='learning rate')
-parser.add_argument('--lr1', default=0.1, type=float, help='learning rate')
-parser.add_argument('--lr2', default=0.1, type=float, help='learning rate')
-parser.add_argument('--gamma', default=0.1, type=float, help='learning rate gamma')
-parser.add_argument('-wd','--weight_decay', default=1e-4, type=float)
 parser.add_argument('--epoch', default=200, type=int, help='total training epoch')
 parser.add_argument('--batch_size', default=128, type=int, help='batch size')
+
+## Settings for optimizer
+parser.add_argument('--schedule', nargs='+', default=[100, 150, 180], type=int)
+parser.add_argument('-opt', '--optmizer', default='cos',choices=['cos', 'step'], help='Dataset name.')
+parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
+parser.add_argument('--gamma', default=0.1, type=float, help='learning rate gamma')
+parser.add_argument('-wd','--weight_decay', default=1e-4, type=float)
 
 args = parser.parse_args()
 
@@ -55,7 +54,6 @@ torch.backends.cudnn.benchmark = False
 #torch.set_float32_matmul_precision('high')
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-best_acc = 0  # best test accuracy
 start_epoch = 1  # start from epoch 0 or last checkpoint epoch
 
 
@@ -85,8 +83,6 @@ transform_test = transforms.Compose([
   
 
 
-
-
 if args.dataset == 'cifar10':
 
    # Data
@@ -106,32 +102,36 @@ else:
    testloader = torch.utils.data.DataLoader(testset, batch_size=2*args.batch_size, shuffle=False, num_workers=args.workers)
 
 
+############# stage1:train teacher model#############
+#####################################################
+#####################################################
+#####################################################
+
+
+# create teacher model
 if args.model == 'reduce20':
-   net = reducenet20(num_classes,expansion=args.expansion)
+   net = reducenet20(num_classes,expansion=args.expansion,width_scaler=args.width_scaler)
    print('reducenet20 is loaded')
-elif args.model == 'res20':
-   net = resnet20(num_classes)
-   print('resnet20 is loaded')
+
 else:
-    net = reducenet56(num_classes,expansion=args.expansion)
+    net = reducenet56(num_classes,expansion=args.expansion,width_scaler=args.width_scaler)
     print('reducenet56 is loaded')
 print('num_classes is {}'.format(num_classes))
 
 summary(net, torch.zeros((1, 3, 32, 32)))
+
+#for pytorch2.0+
 #net = torch.compile(net)
 net = net.to(device)
 if device == 'cuda': 
     if args.multi_gpu==1:
        net = torch.nn.DataParallel(net)
 
-
 criterion = nn.CrossEntropyLoss()
 
 
 # Training
-def train(epoch,optimizer,scaler=1.0):
-    net.scaler.data=torch.tensor(scaler)
-
+def train(epoch,optimizer):
     print('\nEpoch: %d' % epoch)
     net.train()
     train_loss = 0
@@ -155,16 +155,15 @@ def train(epoch,optimizer,scaler=1.0):
                      % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
 
-def test(epoch):
-    global best_acc
-    net.eval()
+def test(epoch,model):
+    model.eval()
     test_loss = 0
     correct = 0
     total = 0
     with torch.no_grad():
         for batch_idx, (inputs, targets) in enumerate(testloader):
             inputs, targets = inputs.to(device), targets.to(device)
-            outputs = net(inputs)
+            outputs = model(inputs)
             loss = criterion(outputs, targets)
 
             test_loss += loss.item()
@@ -175,51 +174,86 @@ def test(epoch):
             progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
-    # Save checkpoint.
-    acc = 100.*correct/total
-    if epoch == args.epoch:
-       print(net.scaler.cpu().detach().numpy())
-
-
-'''
-optimizer0 = optim.SGD(net.parameters(), lr=args.lr0,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
-if args.optmizer == 'cos':
-   scheduler0 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer0, T_max=args.epoch)
-else:
-   scheduler0 = torch.optim.lr_scheduler.MultiStepLR(optimizer=optimizer0, milestones=args.schedule, gamma=args.gamma)
-
-for epoch in range(start_epoch, start_epoch+args.epoch):
-    train(epoch,optimizer0,scaler=0.)
-    test(epoch)
-    scheduler0.step()
-'''
-
-
-optimizer1 = optim.SGD(net.parameters(), lr=args.lr1,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
+# train teacher model
+optimizer1 = optim.SGD(net.parameters(), lr=args.lr,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
 if args.optmizer == 'cos':
    scheduler1 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer1, T_max=args.epoch)
 else:
    scheduler1 = torch.optim.lr_scheduler.MultiStepLR(optimizer=optimizer1, milestones=args.schedule, gamma=args.gamma)
 
+net.scaler.data=torch.tensor(1.0)
 for epoch in range(start_epoch, start_epoch+args.epoch):
     train(epoch,optimizer1)
-    test(epoch)
+    test(epoch,net)
     scheduler1.step()
 
 
+tpath = './checkpoint/model_{}_dataset_{}_expansion_{}_width_{}_teacher.pth'.format(args.model,args.dataset,args.expansion,args.width_scaler)
+torch.save(net.state_dict(),tpath)
 
-torch.save(net.state_dict(),'./checkpoint/dataset_{}_expansion_{}_teacher.pth'.format(args.dataset, args.expansion))
-#net.load_state_dict(torch.load('./checkpoint/dataset_{}_expansion_{}_teacher.pth'.format(args.dataset, args.expansion)))
+if args.model == 'reduce20':
+   snet = reducenet20(num_classes,expansion=args.expansion,width_scaler=args.width_scaler)
+   print('reducenet20 is loaded')
 
-net._weights_freeze()
+else:
+    snet = reducenet56(num_classes,expansion=args.expansion,width_scaler=args.width_scaler)
+    print('reducenet56 is loaded')
 
-optimizer2 = optim.SGD(filter(lambda p: p.requires_grad, net.parameters()) , lr=args.lr2,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
+print('num_classes is {}'.format(num_classes))
+
+
+############# stage2: distill#############
+##########################################
+##########################################
+##########################################
+
+
+# create student model, reusing weights from teacher.
+snet = snet.to(device)
+snet.load_state_dict(torch.load(tpath))
+snet.scaler.data=torch.tensor(0.)
+print('student model is loaded')
+
+def loss_fn_kd(outputs, labels, teacher_outputs, alpha=0.7, T=5.0):
+    KD_loss = (alpha * T * T)*nn.KLDivLoss()(F.log_softmax(outputs/T, dim=1), F.softmax(teacher_outputs/T, dim=1)) + (1. - alpha)*F.cross_entropy(outputs, labels) 
+
+    return KD_loss
+
+def distill(epoch,optimizer):
+    print('\nEpoch: %d' % epoch)
+    net.eval() #teacher model cannot be trained
+    snet.train()
+    train_loss = 0
+    correct = 0
+    total = 0
+        
+    for batch_idx, (inputs, targets) in enumerate(trainloader):
+        inputs, targets = inputs.to(device), targets.to(device)
+        optimizer.zero_grad()
+        t_outputs = net(inputs)
+        s_outputs = snet(inputs)
+        loss = loss_fn_kd(s_outputs, targets, t_outputs) 
+        loss.backward()
+        optimizer.step()
+
+        train_loss += loss.item()
+        _, predicted = s_outputs.max(1)
+        total += targets.size(0)
+        correct += predicted.eq(targets).sum().item()
+
+        progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+                     % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+
+
+# distill
+optimizer2 = optim.SGD(snet.parameters(), lr=args.lr,momentum=0.9,nesterov=True, weight_decay=args.weight_decay)
 scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer2, T_max=args.epoch)
 
-
 for epoch in range(start_epoch, start_epoch+(args.epoch)):
-    train(epoch,optimizer2,scaler=0.)
-    test(epoch)
+    distill(epoch,optimizer2)
+    test(epoch,snet)
     scheduler2.step()
-      
-torch.save(net.state_dict(),'./checkpoint/dataset_{}_expansion_{}_lr_{}_student.pth'.format(args.dataset,args.expansion, args.lr2))  
+
+# spath: student model path 
+spath = './checkpoint/model_{}_dataset_{}_expansion_{}_width_{}_student.pth'.format(args.model,args.dataset,args.expansion,args.width_scaler)
+torch.save(snet.state_dict(),spath)
