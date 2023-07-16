@@ -199,7 +199,6 @@ else:
     snet = reducenet56(num_classes,expansion=args.expansion,width_scaler=args.width_scaler)
     print('reducenet56 is loaded')
 
-print('num_classes is {}'.format(num_classes))
 
 
 ############# stage2: distill#############
