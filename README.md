@@ -7,11 +7,9 @@ The training is divided into two stages:
 
 *  Both branches are trained at the same time to train a larger teacher network
 
-* The non-linear  bottleneck branch is discarded, and the large network is degraded into the small network. The small network reuses weights of teacher network and freezes the classification layer, introduces the LoRA linear branch to increase the learning ability of the small network, and then fuses them afterwards. Depending on the situation, the LambdaReLU of VanillaNet can be inserted into the middle of LoRA to introduce non-linearity during training, which eventually becomes linear.
+*  The non-linear bottleneck branch is discarded, and the large network is degraded into a smaller student network. The student network reuses weights of teacher network during distillation process.
 
 
-# current result
-Accuracy of teacher reduce20 (expansion=1) on cifar10 is 92.88%, student reduce20 obtains 92.70% accuracy by freezing classifer layer, reusing weight of teacher network and fine-tuning 200 epochs. We have not tried the first training stage , vanilla distillation and LoRA technique.
 
 #### Code is based on repo [pytorch-cifar](https://github.com/kuangliu/pytorch-cifar)
 
