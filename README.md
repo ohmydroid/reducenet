@@ -27,6 +27,9 @@ python main.py -m reduce20
 ```python
 python main.py -m reduce56
 ```
+```shell
+sh run.sh
+```
 
 
 
