@@ -55,18 +55,21 @@ torch.backends.cudnn.benchmark = False
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 start_epoch = 1  # start from epoch 0 or last checkpoint epoch
-
+  
 
 if args.dataset == 'cifar10':
-
+   print('==> Preparing data cifar10')
    num_classes = 10
-   print('num_classes is {}'.format(num_classes))
    #CIFAR_TRAIN_MEAN,CIFAR_TRAIN_STD=(0.4914, 0.4822, 0.4465),(0.2023, 0.1994, 0.2010)
-    
-else:
-    num_classes = 100
-    #CIFAR_TRAIN_MEAN,CIFAR_TRAIN_STD = (0.5071, 0.4865, 0.4409),(0.2673, 0.2564, 0.2762)
+   print('num_classes is {}'.format(num_classes))
+   datagen = torchvision.datasets.CIFAR10
 
+else:
+   print('==> Preparing data cifar100')
+   num_classes = 100
+   #CIFAR_TRAIN_MEAN,CIFAR_TRAIN_STD = (0.5071, 0.4865, 0.4409),(0.2673, 0.2564, 0.2762)
+   print('num_classes is {}'.format(num_classes))
+   datagen = torchvision.datasets.CIFAR100
 
 
 transform_train = transforms.Compose([
@@ -80,26 +83,13 @@ transform_test = transforms.Compose([
                     transforms.ToTensor(),
                     #transforms.Normalize(CIFAR_TRAIN_MEAN,CIFAR_TRAIN_STD),
                     ])
-  
 
+trainset = datagen(root=args.data_dir, train=True, download=False, transform=transform_train)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
 
-if args.dataset == 'cifar10':
+testset = datagen(root=args.data_dir, train=False, download=False, transform=transform_test)
+testloader = torch.utils.data.DataLoader(testset, batch_size=2*args.batch_size, shuffle=False, num_workers=args.workers)
 
-   # Data
-   print('==> Preparing data cifar10')
-   trainset = torchvision.datasets.CIFAR10(root=args.data_dir, train=True, download=False, transform=transform_train)
-   trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
-
-   testset = torchvision.datasets.CIFAR10(root=args.data_dir, train=False, download=False, transform=transform_test)
-   testloader = torch.utils.data.DataLoader(testset, batch_size=2*args.batch_size, shuffle=False, num_workers=args.workers)
-
-else:
-    # Data
-   print('==> Preparing data..')
-   trainset = torchvision.datasets.CIFAR100(root=args.data_dir, train=True, download=True, transform=transform_train)
-   trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
-   testset = torchvision.datasets.CIFAR100(root=args.data_dir, train=False, download=True, transform=transform_test)
-   testloader = torch.utils.data.DataLoader(testset, batch_size=2*args.batch_size, shuffle=False, num_workers=args.workers)
 
 
 ############# stage1:train teacher model#############
