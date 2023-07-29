@@ -29,11 +29,9 @@ class BasicBlock(nn.Module):
                                      )
 
         self.lora_branch = nn.Sequential(
-                                    nn.Conv2d(in_planes, expansion*planes, kernel_size=3, stride=stride, padding=1, bias=False),
-                                    nn.BatchNorm2d(expansion*planes),
-                                    nn.Conv2d(expansion*planes, planes, kernel_size=1, stride=1, padding=0, bias=False),
-                                    nn.BatchNorm2d(planes),
-                                    )
+                                        nn.Conv2d(in_planes, planes, kernel_size=1, stride=stride, padding=0, bias=False),
+                                        nn.BatchNorm2d(planes),
+                                        )
 
        
         self.fuse = nn.Sequential(nn.BatchNorm2d(planes),
