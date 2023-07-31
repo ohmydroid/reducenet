@@ -17,7 +17,7 @@ The training is divided into two stages:
 
 more detail [知乎文章]（https://zhuanlan.zhihu.com/p/634198940?）
 
-# Result
+# Result on Cifar10
 | Model  Type  | Params | MAdds  | Acc (%) |
 |--------------|--------|--------|---------|
 | ResNet20-1-T | 412.1K | 62.0M  | 91.97   |
