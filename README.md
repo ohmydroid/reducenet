@@ -17,7 +17,21 @@ The training is divided into two stages:
 
 more detail [知乎文章]（https://zhuanlan.zhihu.com/p/634198940?）
 
+# Result
+| Model  Type  | Params | MAdds  | Acc (%) |
+|--------------|--------|--------|---------|
+| ResNet20-1-T | 412.1K | 62.0M  | 91.97   |
+| ResNet20-1-S | 272.5K | 40.8M  | 92.72   |
+| ResNet20-2-T | 1.6M   | 247.3M | 93.27   |
+| ResNet20-2-S | 1.1M   | 162.4M | 94.40   |
+| ResNet20-4-T | 6.5M   | 987.4M | 93.74   |
+| ResNet20-4-S | 4.3M   | 647.7M | 95.08   |
+| ResNet56-1-T | 1.3M   | 194.2M | 92.84   |
+| ResNet56-1-S | 855.8K | 125.7M | 93.79   |
+| ResNet56-2-T | 5.3M   | 775.8M | 94.11   |
+| ResNet56-2-S | 3.4M   | 502.1M | 95.27   |
 
+Symbols "T" and "S" in model type column denote teacher and student models respectively. Integers 1, 2 and 4 represent width factor of network.
 
 
 # just run
