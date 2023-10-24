@@ -25,7 +25,7 @@ parser.add_argument('-ws','--width_scaler', default=1,type=int, help='network wi
 
 ## Settings for data
 parser.add_argument('-d', '--dataset', default='cifar10',choices=['cifar10', 'cifar100'], help='Dataset name.')
-parser.add_argument('--data_dir', default='your_path/data', help='data path')
+parser.add_argument('--data_dir', default='./data', help='data path')
 
 ## Settings for training
 parser.add_argument('--multi_gpu', default=0, help='Model Type.')
@@ -93,11 +93,6 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=2*args.batch_size, 
 
 
 ############# stage1:train teacher model#############
-#####################################################
-#####################################################
-#####################################################
-
-
 # create teacher model
 if args.model == 'reduce20':
    net = reducenet20(num_classes,expansion=args.expansion,width_scaler=args.width_scaler)
@@ -113,9 +108,8 @@ summary(net, torch.zeros((1, 3, 32, 32)))
 #for pytorch2.0+
 #net = torch.compile(net)
 net = net.to(device)
-if device == 'cuda': 
-    if args.multi_gpu==1:
-       net = torch.nn.DataParallel(net)
+if device == 'cuda' and args.multi_gpu==1:
+    net = torch.nn.DataParallel(net)
 
 criterion = nn.CrossEntropyLoss()
 
@@ -191,12 +185,7 @@ else:
 
 
 
-############# stage2: distill#############
-##########################################
-##########################################
-##########################################
-
-
+############# stage2: distill######################
 # create student model, reusing weights from teacher.
 snet = snet.to(device)
 snet.load_state_dict(torch.load(tpath))
